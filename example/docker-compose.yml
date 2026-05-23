@@ -1,0 +1,55 @@
+name: bitcoin
+
+services:
+  bitcoin-core:
+    image: bitcoin/bitcoin:30-alpine@sha256:b91c2e354696c49b77485dcd20d758bd46bcbc62fdb7f1713cce85b19587737b
+    container_name: bitcoin-core
+    hostname: bitcoin-core
+    restart: unless-stopped
+    volumes:
+      - ./bitcoin.conf:/conf/bitcoin.conf:ro
+      - ./data/bitcoin-core:/mnt/bitcoin
+    entrypoint: bitcoind
+    command:
+      - -conf=/conf/bitcoin.conf
+    networks:
+      bitcoin:
+        ipv4_address: 172.28.0.10
+    healthcheck:
+      test: ["CMD", "bitcoin-cli", "-rpcconnect=172.28.0.10", "-rpccookiefile=/mnt/bitcoin/.cookie", "ping"]
+      interval: 15s
+      timeout: 2s
+      retries: 3
+      start_period: 60s
+  electrs:
+    image: ghcr.io/pasukaru/electrs:latest
+    container_name: electrs
+    hostname: electrs
+    restart: unless-stopped
+    stop_grace_period: 1m
+    environment:
+      ELECTRS_LOG_FILTERS: "WARN"
+      ELECTRS_DAEMON_P2P_ADDR: "bitcoin-core:8333"
+      ELECTRS_DAEMON_RPC_ADDR: "bitcoin-core:8332"
+      ELECTRS_ELECTRUM_RPC_ADDR: "0.0.0.0:50001"
+      ELECTRS_COOKIE_FILE: "/mnt/bitcoin/.cookie"
+    ports:
+      - 50001:50001
+    volumes:
+      - ./data/electrs:/data
+      - ./data/bitcoin-core:/mnt/bitcoin:ro
+    networks:
+      bitcoin:
+        ipv4_address: 172.28.0.11
+    healthcheck:
+      test: ["CMD", "bash", "-c", "(: < /dev/tcp/127.0.0.1/4224) >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 1s
+      retries: 3
+      start_period: 60s
+
+networks:
+  bitcoin:
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
