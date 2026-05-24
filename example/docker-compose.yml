@@ -2,7 +2,7 @@ name: bitcoin
 
 services:
   bitcoin-core:
-    image: bitcoin/bitcoin:30-alpine@sha256:b91c2e354696c49b77485dcd20d758bd46bcbc62fdb7f1713cce85b19587737b
+    image: bitcoin/bitcoin:31-alpine@sha256:15b158e837da4b9a8815a7105908fdcd313acb3081a7f600b79f5f26d7160883
     container_name: bitcoin-core
     hostname: bitcoin-core
     restart: unless-stopped
