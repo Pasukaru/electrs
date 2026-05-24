@@ -1,4 +1,4 @@
-FROM rust:1.95.0-slim-bookworm AS chef
+FROM rust:1.95.0-slim-trixie AS chef
 
 ENV CARGO_REGISTRIES_CRATES_IO_PROTOCOL=sparse
 
@@ -39,7 +39,7 @@ RUN cargo build --release --locked && \
 
 # ---
 
-FROM debian:bookworm-slim AS runtime
+FROM debian:trixie-slim AS runtime
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
